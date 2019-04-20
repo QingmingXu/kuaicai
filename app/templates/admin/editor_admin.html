@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>编辑管理员</title>
+    <script rel="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-3.3.7/css/bootstrap.min.css') }}" type="text/css">
+    <script rel="text/javascript" src="{{ url_for('static', filename='bootstrap-3.3.7/js/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='editor_admin.css') }}" type="text/css">
+  </head>
+  <body>
+    <div class="update-form">
+      <form action="{{ post_url }}?admin_id={{ admin_id }}&page={{ page_num }}" method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="top-group">
+          <div class="update-form-item1">
+            {{ form.name.label}} {{ form.name(class='form-control', style='margin-bottom: 5px;') }}
+            {{ form.age.label }} {{ form.age(class='form-control', style='margin-bottom: 5px;') }}
+            {% if admin_sex == '男' %}
+              <div><input name="sex" value="1" type="radio" checked="checked">  男</div>
+              <div><input name="sex" value="0" type="radio">  女</div><br>
+            {% else %}
+              <div><input name="sex" value="1" type="radio">  男</div>
+              <div><input name="sex" value="0" type="radio" checked="checked">  女</div><br>
+            {% endif %}
+            {{ form.phone.label }} {{ form.phone(class='form-control', style='margin-bottom: 5px;') }}
+            {{ form.email.label }} {{ form.email(class='form-control', style='margin-bottom: 10px;') }}
+            {% if current_user.is_super %}
+              权限级别<br>
+              {% if admin_level %}
+                超级管理员 <input name="is_super" value="1" type="radio" checked="checked"><br>
+                普通管理员 <input name="is_super" value="0" type="radio">
+              {% else %}
+                超级管理员 <input name="is_super" value="1" type="radio"><br>
+                普通管理员 <input name="is_super" value="0" type="radio" checked="checked">
+              {% endif %}
+            {% else %}
+              <input name="is_super" value="0" type="hidden">
+            {% endif %}              
+          </div>
+      
+          <div class="update-form-item2">
+            管理员头像<br>
+            {% if image_url %}
+              <img src="{{ image_url }}" class="img-thumbnail" style="width: 180px;height: 240px;margin-left: 20px;margin-bottom: 20px; "><br>
+            {% else %}
+              <img src="#" alt="暂无图像" class="img-thumbnail" style="width: 180px;height: 240px;margin-left: 20px;margin-bottom: 20px; "><br>
+            {% endif %}
+            {{ form.image.label }} {{ form.image(class='form-control') }}
+          </div>
+        </div>
+        <div class="button-group">
+          <a href="{{ back_url }}?page={{ page_num }}" class="btn btn-primary">返回</a>
+          {{ form.submit(class='btn btn-success') }}
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+.update-form .top-group{
+	display: flex;
+	justify-content: space-around;
+	margin-top: 30px;
+}
+
+.update-form .top-group .update-form-item1{
+	width: 300px;
+}
+
+.update-form .top-group .update-form-item2{
+	width: 300px;
+}
+
+.update-form .button-group{
+	margin-top: 230px;
+	margin-left: 85%; 
+}

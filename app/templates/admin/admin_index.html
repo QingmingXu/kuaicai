@@ -1,0 +1,223 @@
+{% extends "manage_index.html"%}
+{% block title %}管理员管理{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin_index.css') }}" type="text/css">
+{% endblock %}
+{% block body %}
+  {% if current_user.is_super %}
+  <button type="button" id="addadmin" class="btn btn-primary" data-toggle="modal" data-target="#addAdminModal" style="margin: 55px 185px;">新增管理员</button>
+
+  <div class="container" style="margin-left: 13%;">
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="modal fade" id="addAdminModal" tabindex="-1" role="dialog" aria-labelledby="addAdminModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin.add_admin') }}?page={{ page_num }}">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="addAdminModalLabel">添加管理员</h4>
+          </div>
+          <div class="modal-body">
+            {{ form.hidden_tag() }}
+            {{ form.name.label}} {{ form.name(class='form-control') }}
+            {{ form.age.label }} {{ form.age(class='form-control') }}
+            <div><input name="sex" value="1" type="radio" checked="checked">  男</div>
+            <div><input name="sex" value="0" type="radio">  女</div><br>
+            {{ form.phone.label }} {{ form.phone(class='form-control') }}
+            {{ form.email.label }} {{ form.email(class='form-control') }}
+            {{ form.password.label }} {{ form.password(class='form-control') }}
+            {{ form.password_again.label }} {{ form.password_again(class='form-control') }}
+            <input name="is_super" value="1" type="radio" checked="checked">超级管理员
+            <input name="is_super" value="0" type="radio">普通管理员
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            {{ form.submit(class='btn btn-primary') }}
+          </div>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped table-condensed table-hover" style="margin-left: 13%;margin-bottom: 30px;">
+    <thead>
+      <tr>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>性别</th>
+        <th>联系电话</th>
+        <th>邮箱</th>
+        <th>级别</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in admin_list %}
+        <tr>
+          <th>{{ item.name }}</th>
+          <th>{{ item.age }}</th>
+          <th>{{ item.sex }}</th>
+          <th>{{ item.phone }}</th>
+          <th>{{ item.email }}</th>
+          {% if item.is_super %}
+            <th>超级管理员</th>
+          {% else %}
+            <th>普通管理员</th>
+          {% endif %}
+          <th>
+            <button type="button" id="seeAdmin_{{item.id}}" class="btn btn-success btn-xs" data-toggle="modal" data-target="#seeAdminModal_{{item.id}}">查看</button>
+            <div class="modal fade bs-example-modal-lg" id="seeAdminModal_{{item.id}}" tabindex="-1" role="dialog" aria-labelledby="seeAdminModalLabel_{{item.id}}">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="seeAdminModalLabel_{{item.id}}">{{item.name}}</h4>
+                  </div>
+                  <div class="modal-body">
+                    <span style="margin-left: 15px;">他(她)的头像</span><br>
+                    {% if item.image_url_2 %}
+                      <img src="{{ item.image_url_2 }}" class="img-thumbnail" style="width: 180px;height: 240px;margin-left: 20px;">
+                    {% else %}
+                      <img src="#" alt="暂无图片" class="img-thumbnail" style="width: 180px;height: 240px;margin-left: 20px;">
+                    {% endif %}
+                    <div style="margin-left: 650px;margin-top: 0;">
+                    <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">姓名</span>{{ item.name }}<br>
+                    <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">年龄</span>{{ item.age }}<br>
+                    <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">性别</span>{{ item.sex }}<br>
+                    <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">联系电话</span>{{ item.phone }}<br>
+                    <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">邮箱</span>{{ item.email }}<br>
+                    {% if item.is_super %}
+                      <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">级别</span>超级管理员<br>
+                    {% else %}
+                      <span class="label label-primary" style="margin-right: 20px;margin-top: 10px;">级别</span>普通管理员<br>
+                    {% endif %}
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <a href="{{ url_for_editor }}?admin_id={{ item.id }}&page_num={{ page_num }}" class="btn btn-info btn-xs">编辑</a>
+            {% if item.is_super == False %}
+              <button type="button" id="deleteadmin_{{ item.id }}" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteAdminModal_{{item.id}}">删除</button>
+            {% endif %}
+            <div class="modal fade" id="deleteAdminModal_{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteAdminModalLabel_{{ item.id }}">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('admin.delete_admin') }}?page_num={{ page_num }}">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="deleteAdminModalLabel_{{ item.id }}">删除管理员</h4>
+                    </div>
+                    <div class="modal-body">
+                       <p>是否对管理员{{ item.name }}执行删除操作？</p>
+                       <input type="hidden" name="delete_id" value="{{ item.id }}">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">否</button>
+                      <input type="submit" class="btn btn-danger" value="是">
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <button type="button" id="changepwd_{{ item.id }}" class="btn btn-default btn-xs" data-toggle="modal" data-target="#changePwdModal_{{item.id}}">更改密码</button>
+            <div class="modal fade" id="changePwdModal_{{item.id}}" tabindex="-1" role="dialog" aria-labelledby="changePwdModalLabel_{{item.id}}">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('admin.change_pwd') }}?admin_id={{ item.id }}&page={{ page_num }}">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="changePwdModalLabel_{{item.id}}">修改管理员的密码</h4>
+                    </div>
+                    <div class="modal-body">
+                      {{ change_pwd_form.hidden_tag() }}
+                      {{ change_pwd_form.password.label }} {{ change_pwd_form.password(class='form-control') }}
+                      {{ change_pwd_form.password_again.label }} {{ change_pwd_form.password_again(class='form-control') }}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                      {{ change_pwd_form.submit(class='btn btn-primary') }}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="page" style="margin-left: 300px;">
+    {{ page_list|safe }}
+  </div>
+  {% else %}
+    <p style="margin: 60px 185px;">管理员资料</p>
+
+    <div class="flash-info" style="margin-left: 13%;">
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-info">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="container">
+    <div class="base-info">
+      <span class="label label-default" style="font-size: 15px;">管理员名称</span> {{ current_user.name }}<br><br>
+      <span class="label label-default" style="font-size: 15px;">年龄</span> {{ current_user.age }}<br><br>
+      <span class="label label-default" style="font-size: 15px;">性别</span> {{ current_user.sex }}<br><br>
+      <span class="label label-default" style="font-size: 15px;">联系电话</span> {{ current_user.phone }}<br><br>
+      <span class="label label-default" style="font-size: 15px;">个人邮箱</span> {{ current_user.email }}
+    </div>
+    <div class="base-image" style="margin-left: 315px;">
+      <span class="label label-default" style="margin-left: 15px;font-size: 15px;">我的头像</span><br><br>
+      {% if current_user.image_url_2 %}
+        <img src="{{ current_user.image_url_2 }}" class="img-thumbnail" style="width: 180px;height: 240px;margin-left: 20px;">
+      {% else %}
+        <img src="#" alt="暂无图片" class="img-thumbnail" style="width: 180px;height: 240px;margin-left: 20px;">
+      {% endif %}
+    </div>
+    </div>
+    <div class="button-group">
+      <a href="{{ url_for_editor }}?admin_id={{ current_user.id }}" class="btn btn-primary">修改信息</a>
+
+      <button type="button" id="changepwd_{{ current_user.id }}" class="btn btn-primary" data-toggle="modal" data-target="#changePwdModal_{{ current_user.id }}">更改密码</button>
+      <div class="modal fade" id="changePwdModal_{{ current_user.id }}" tabindex="-1" role="dialog" aria-labelledby="changePwdModalLabel_{{ current_user.id }}">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.change_pwd_normal') }}?admin_id={{ current_user.id }}">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="changePwdModalLabel_{{ current_user.id }}">修改管理员的密码</h4>
+              </div>
+              <div class="modal-body">
+                {{ normal_change_pwd_form.hidden_tag() }}
+                {{ normal_change_pwd_form.password_old.label }} {{ normal_change_pwd_form.password_old(class='form-control') }}
+                {{ normal_change_pwd_form.password.label }} {{ normal_change_pwd_form.password(class='form-control') }}
+                {{ normal_change_pwd_form.password_again.label }} {{ normal_change_pwd_form.password_again(class='form-control') }}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                {{ normal_change_pwd_form.submit(class='btn btn-primary') }}
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
+{% block scripts%}
+{% endblock %} 

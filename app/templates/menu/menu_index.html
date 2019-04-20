@@ -1,0 +1,144 @@
+{% extends "manage_index.html"%}
+{% block title %}菜品管理{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='menu_index.css') }}" type="text/css">
+{% endblock %}
+{% block body %}
+  <!--a href="#" class="btn btn-success" style="margin: 55px 185px;">添加菜品</a-->
+  <button type="button" id="addMenu" class="btn btn-success" data-toggle="modal" data-target="#addMenuModal" style="margin: 55px 185px;">添加菜品</button>
+  
+  <div class="container" style="margin-left: 13%;">
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="modal fade" id="addMenuModal" tabindex="-1" role="dialog" aria-labelledby="addMenuModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('menu.add_menu') }}?page={{ page_num }}">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="addMenuModalLabel">添加菜品</h4>
+          </div>
+          <div class="modal-body">
+            {{ form.hidden_tag() }}
+            {{ form.name.label}} {{ form.name(class='form-control') }}
+            {{ form.type_name.label }} {{ form.type_name(class='form-control') }}
+            {{ form.price.label }} {{ form.price(class='form-control') }}
+            {{ form.number.label }} {{ form.number(class='form-control') }}
+            {{ form.info.label }} {{ form.info(class='form-control') }}
+            {{ form.launchdate.label }} {{ form.launchdate(class='form-control') }}
+            {{ form.image.label }} {{ form.image(class='form-control') }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+          <!--button type="button" class="btn btn-primary">提交</button-->
+            {{ form.submit_1(class='btn btn-primary') }}
+          </div>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped table-condensed table-hover" style="margin-left: 13%;margin-bottom: 30px;">
+    <thead>
+      <tr>
+        <th>名称</th>
+        <th>类型</th>
+        <th>价格(元)</th>
+        <th>推出日期</th>
+        <th>剩余数量(份)</th>
+        <th>上架状态</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in menu_list %}
+        <tr>
+          <th>{{item.name}}</th>
+          <th>{{item.type_name}}</th>
+          <th>{{item.price}}</th>
+          <th>{{item.launch_date}}</th>
+          <th>{{item.number}}</th>
+          {% if item.is_grounding %}
+            <th>上架</th>
+          {% else %}
+            <th>已下架</th>
+          {% endif %}
+          <th>
+            <button type="button" id="seeMenu_{{item.id}}" class="btn btn-info btn-xs" data-toggle="modal" data-target="#seeMenuModal_{{item.id}}">查看</button>
+            <div class="modal fade bs-example-modal-lg" id="seeMenuModal_{{item.id}}" tabindex="-1" role="dialog" aria-labelledby="seeMenuModalLabel_{{item.id}}">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="seeMenuModalLabel_{{item.id}}">{{item.name}}</h4>
+                  </div>
+                  <div class="modal-body">
+                    <img src="{{ item.image_url_2 }}" class="img-thumbnail" style="width: 250px;height: 180px;margin-left: 20px;">
+                    <span style="margin-top: 5px;margin-left: 22px;">{{ item.info }}</span>
+                    <div style="margin-left: 650px;margin-top: 0;">
+                    <span class="label label-info" style="margin-right: 20px;margin-top: 10px;">菜品类型</span>{{ item.type_name }}<br>
+                    <span class="label label-info" style="margin-right: 20px;margin-top: 10px;">菜品价格(一份)</span>{{item.price}}(元)<br>
+                    <span class="label label-info" style="margin-right: 20px;margin-top: 10px;">推出日期</span>{{ item.launch_date }}<br>
+                    <span class="label label-info" style="margin-right: 20px;margin-top: 10px;">剩余数量</span>{{ item.number }}<br>
+                    {% if item.is_grounding %}
+                      <span class="label label-info" style="margin-right: 20px;margin-top: 10px;">当前状态</span>上架<br>
+                    {% else %}
+                      <span class="label label-info" style="margin-right: 20px;margin-top: 10px;">当前状态</span>已下架<br>
+                    {% endif %}
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <a href="{{ url_for_update }}?menu_id={{ item.id }}&page_num={{ page_num }}" class="btn btn-primary btn-xs">修改</a>
+
+            <button type="button" id="deletemenu_{{ item.id }}" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteMenuModal_{{item.id}}">删除</button>
+            <div class="modal fade" id="deleteMenuModal_{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteMenuModalLabel_{{ item.id }}">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('menu.delete_menu') }}?page_num={{ page_num }}">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="deleteMenuModalLabel_{{ item.id }}">删除菜品</h4>
+                    </div>
+                    <div class="modal-body">
+                       <p>当前菜品为{{ item.name }}，是否删除？</p>
+                       <input type="hidden" name="delete_id" value="{{ item.id }}">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">否</button>
+                      <input type="submit" class="btn btn-danger" value="是">
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="page" style="margin-left: 300px;">
+    {{ page_list|safe }}
+  </div>
+{% endblock %}
+{% block scripts%}
+<script type="text/javascript">
+  //$(document).on("click", "#addMenu", function() {
+  //  $("#addMenuModal").modal("show");
+  //});
+  //$(document).on("click", "#seeMenu", function() {
+  //  $("#seeMenuModal").modal("show");
+  //});
+</script>
+{% endblock %} 

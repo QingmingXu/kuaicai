@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>快菜管理平台入口</title>
+    <script rel="text/javascript" href="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-3.3.7/css/bootstrap.min.css') }}" type="text/css">
+    <script rel="text/javascript" href="{{ url_for('static', filename='bootstrap-3.3.7/js/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login_index.css') }}" type="text/css">
+  </head>
+    
+  <body background="{{ url_for('static', filename='images/login_index.jpg') }}" style="background-repeat: no-repeat;background-size:cover;background-position: center center;background-attachment: fixed;background-color: #cccccc;">
+    <div class="flash-info" style="margin-top: 30px;">
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-info">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="container">
+      <div class="col-xs-4 col-xs-offset-4">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">快菜管理平台入口</h3>
+          </div>
+          <div class="panel-body">
+            <form action="/" method="POST">
+    	      {{ form.hidden_tag() }}
+    	      {{ form.name.label }} {{ form.name(class='form-control') }}
+    	      {{ form.password.label }} {{ form.password(class='form-control') }}
+    	      {{ form.submit(class='btn btn-success pull-right', style='margin-top: 1em;') }}
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+  //$(document).on("click", "#addMenu", function() {
+  //  $("#addMenuModal").modal("show");
+  //});
+  //$(document).on("click", "#seeMenu", function() {
+  //  $("#seeMenuModal").modal("show");
+  //});
+  </script>
+</html>
+

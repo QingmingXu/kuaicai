@@ -1,0 +1,149 @@
+{% extends "manage_index.html"%}
+{% block title %}订单管理{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='order_index.css') }}" type="text/css">
+{% endblock %}
+{% block body %}
+  <div class="container" style="margin: 55px 185px;">
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-info">
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <table class="table table-striped table-condensed table-hover" style="margin-left: 13%;margin-bottom: 30px;">
+    <thead>
+      <tr>
+        <th>订单ID</th>
+        <th>订单金额</th>
+        <th>下单时间</th>
+        <th>配送地址</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order_list %}
+        <tr>
+          <th>{{item.id}}</th>
+          <th>{{item.price}}</th>
+          <th>{{item.order_time | datetime_format}}</th>
+          <th>{{item.order_address}}</th>
+          <th>
+            <button type="button" id="seeOrder_{{item.id}}" class="btn btn-success btn-xs" data-toggle="modal" data-target="#seeOrderModal_{{item.id}}">详细</button>
+            <div class="modal fade bs-example-modal-lg" id="seeOrderModal_{{item.id}}" tabindex="-1" role="dialog" aria-labelledby="seeOrderModalLabel_{{item.id}}">
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="seeOrderModalLabel_{{item.id}}">订单号：{{item.id}}</h4>
+                  </div>
+                  <div class="modal-body">
+                    <div>
+                      订单号：{{ item.id }}<br/>
+                      下单用户ID：{{ item.belong_to }}<br/>
+                      下单时间：{{item.order_time | datetime_format}}<br/>
+                      配送地址：{{ item.order_address }}<br/>
+                      订单状态：{{ item.order_status }}<br/>
+                      支付方式：{{ item.pay_way }}<br/>
+                      支付状态：{{ item.pay_status }}<br/>
+                      配送状态：{{ item.go_status }}<br/>
+                      金额：{{ item.price }}<br/>
+                      内容：{{ item.content }}
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" id="editororder_{{ item.id }}" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#editorOrderModal_{{item.id}}">编辑订单状态</button>
+            <div class="modal fade" id="editorOrderModal_{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="editorOrderModalLabel_{{ item.id }}">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('order.editor_order') }}?page={{ page_num }}">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="editorOrderModalLabel_{{ item.id }}">编辑订单状态</h4>
+                    </div>
+                    <div class="modal-body">
+                      <input type="hidden" name="editor_id" value="{{ item.id }}">
+                      订单支付状态<br/>
+                      {% if item.pay_status == '未支付' %}
+                        <input name="pay_status" value="0" type="radio" checked="checked"> 客户未支付
+                        <input name="pay_status" value="1" type="radio"> 客户已支付<br/>
+                      {% endif %}
+                      {% if item.pay_status == '已支付' %}
+                        <input name="pay_status" value="0" type="radio"> 客户未支付
+                        <input name="pay_status" value="1" type="radio" checked="checked"> 客户已支付<br/>
+                      {% endif %}
+                      订单配送状态<br/>
+                      {% if item.go_status == '未配送' %}
+                        <input name="go_status" value="0" type="radio" checked="checked"> 未配送
+                        <input name="go_status" value="1" type="radio"> 配送中
+                        <input name="go_status" value="2" type="radio"> 配送成功<br/>
+                      {% endif %}
+                      {% if item.go_status == '配送中' %}
+                        <input name="go_status" value="0" type="radio"> 未配送
+                        <input name="go_status" value="1" type="radio" checked="checked"> 配送中
+                        <input name="go_status" value="2" type="radio"> 配送成功<br/>
+                      {% endif %}
+                      {% if item.go_status == '配送成功' %}
+                        <input name="go_status" value="0" type="radio"> 未配送
+                        <input name="go_status" value="1" type="radio" > 配送中
+                        <input name="go_status" value="2" type="radio" checked="checked"> 配送成功<br/>
+                      {% endif %}
+                      订单状态<br/>
+                      {% if item.order_status == '正常' %}
+                        <input name="order_status" value="1" type="radio" checked="checked"> 订单正常
+                        <input name="order_status" value="0" type="radio"> 订单已取消<br/>
+                      {% endif %}
+                      {% if item.order_status == '已取消' %}
+                        <input name="order_status" value="1" type="radio"> 订单正常
+                        <input name="order_status" value="0" type="radio" checked="checked"> 订单已取消<br/>
+                      {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+                      <input type="submit" class="btn btn-success" value="确认">
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" id="deleteorder_{{ item.id }}" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteOrderModal_{{item.id}}">删除</button>
+            <div class="modal fade" id="deleteOrderModal_{{ item.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteOrderModalLabel_{{ item.id }}">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('order.delete_order') }}?page={{ page_num }}">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                      <h4 class="modal-title" id="deleteOrderModalLabel_{{ item.id }}">删除记录</h4>
+                    </div>
+                    <div class="modal-body">
+                       <p>当前订单记录号为{{ item.id }}，是否删除该记录？</p>
+                       <input type="hidden" name="delete_id" value="{{ item.id }}">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">否</button>
+                      <input type="submit" class="btn btn-danger" value="是">
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </th>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="page" style="margin-left: 300px;">
+    {{ page_list|safe }}
+  </div>
+{% endblock %}
+{% block scripts%}
+{% endblock %} 
